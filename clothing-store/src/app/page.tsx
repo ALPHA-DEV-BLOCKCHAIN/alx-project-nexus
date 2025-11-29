@@ -16,8 +16,8 @@ export default function Home() {
           </h1>
 
           <p className="text-gray-400 max-w-md">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do 
-            eiusmod tempor incididunt ut labore et dolore magna.
+            Step into a world where fashion meets comfort. Explore curated collections of shoes, clothing, and home accessories designed to elevate your everyday look.
+Whether you're dressing for work, weekends, or special moments, we bring you timeless pieces crafted to inspire confidence.
           </p>
 
           <button className="bg-[#e86f53] hover:bg-[#cf6046] text-white px-6 py-3 rounded-full font-semibold transition">
