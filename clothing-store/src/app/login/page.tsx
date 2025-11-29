@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function LoginPage() {
-  const router = useRouter();
   const { login } = useUser();
+  const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,45 +14,38 @@ export default function LoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const user = users.find((u: any) => u.email === email && u.password === password);
-
-    if (!user) {
-      alert("Invalid email or password");
-      return;
+    // Dummy validation — replace later when connecting backend
+    if (email && password) {
+      login({ name: "User", email });
+      router.push("/dashboard");
     }
-
-    login({ name: user.name, email: user.email });
-    router.push("/dashboard");
   };
 
   return (
-    <section className="p-10 max-w-md mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Login</h1>
+    <div className="p-10 max-w-lg mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Login</h1>
 
-      <form onSubmit={handleLogin} className="space-y-4">
+      <form onSubmit={handleLogin} className="flex flex-col gap-4">
         <input
-          type="email"
-          placeholder="Email"
-          className="w-full p-3 border rounded"
-          value={email}
+          className="border p-3 rounded"
+          placeholder="Email Address"
           onChange={(e) => setEmail(e.target.value)}
-          required
         />
 
         <input
           type="password"
+          className="border p-3 rounded"
           placeholder="Password"
-          className="w-full p-3 border rounded"
-          value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
         />
 
-        <button className="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700">
+        <button
+          type="submit"
+          className="bg-black text-white py-3 rounded font-semibold"
+        >
           Login
         </button>
       </form>
-    </section>
+    </div>
   );
 }
