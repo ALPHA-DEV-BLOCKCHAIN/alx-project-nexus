@@ -29,7 +29,7 @@ export default function Home() {
         <div className="flex justify-center lg:justify-end">
           <div className="w-72 h-72 lg:w-96 lg:h-96 rounded-full overflow-hidden bg-white">
             <img
-              src="/fashion-girl.jpg"
+              src="/fashion-girl.jpg.jpg"
               alt="Fashion Designer"
               className="w-full h-full object-cover"
             />
