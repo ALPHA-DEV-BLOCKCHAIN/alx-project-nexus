@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/context/UserContext"; // <- make sure path is correct
+import { useUser } from "@/context/UserContext";
 
 export default function PortalPage() {
   const router = useRouter();
-  const { login } = useUser(); // use context login()
+  const { login } = useUser();
 
   const images = [
     "/portal/flowerdress.jpg",
@@ -18,18 +18,22 @@ export default function PortalPage() {
   const [current, setCurrent] = useState(0);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  // Auto-carousel
+  // Auto-slide
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % images.length);
-    }, 4000);
+    const interval = setInterval(
+      () => setCurrent((prev) => (prev + 1) % images.length),
+      4000
+    );
     return () => clearInterval(interval);
   }, []);
 
   // LOGIN HANDLER
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+
+    setError("");
 
     const users = JSON.parse(localStorage.getItem("users") || "[]");
 
@@ -38,24 +42,25 @@ export default function PortalPage() {
     );
 
     if (!user) {
-      // ⚠️ No alert() allowed → show inline error or ignore
-      console.warn("Invalid credentials");
+      setError("Invalid email or password.");
       return;
     }
 
-    // 1. Update Global User Context
+    // Store login in context
     login({ name: user.name, email: user.email });
 
-    // 2. Save full user (including role)
+    // Store login flag (IMPORTANT for Checkout)
+    localStorage.setItem("userLoggedIn", "true");
+
+    // Store current user
     localStorage.setItem("currentUser", JSON.stringify(user));
 
-    // 3. Redirect based on role
+    // Destination based on role
     const destination =
       user.role?.toLowerCase() === "admin"
         ? "/dashboard/admin"
         : "/dashboard";
 
-    // Important: small delay stops redirect bounce-back
     setTimeout(() => {
       router.push(destination);
     }, 150);
@@ -64,6 +69,7 @@ export default function PortalPage() {
   return (
     <div className="w-full h-screen flex bg-gray-100 overflow-hidden">
 
+      {/* LEFT SLIDESHOW */}
       <div className="hidden md:block w-1/2 h-full relative">
         <img
           src={images[current]}
@@ -72,6 +78,7 @@ export default function PortalPage() {
         <div className="absolute inset-0 bg-black/35"></div>
       </div>
 
+      {/* RIGHT LOGIN SIDE */}
       <div className="w-full md:w-1/2 bg-white h-full overflow-y-auto p-12 relative">
 
         <div className="flex items-center justify-between mb-10">
@@ -87,6 +94,11 @@ export default function PortalPage() {
           Welcome back!
         </h1>
 
+        {/* INLINE ERROR */}
+        {error && (
+          <div className="mb-4 text-red-600 font-semibold">{error}</div>
+        )}
+
         <form className="flex flex-col gap-6" onSubmit={handleLogin}>
 
           <div>
@@ -95,13 +107,12 @@ export default function PortalPage() {
             </label>
             <input
               type="email"
-              className="w-full border border-gray-400 rounded-md px-4 py-3 mt-2 text-gray-900 placeholder-gray-500"
+              className="w-full border border-gray-400 rounded-md px-4 py-3 mt-2 text-gray-900"
               placeholder="Enter your email address..."
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-            <p className="text-red-600 text-sm">*</p>
           </div>
 
           <div>
@@ -110,15 +121,12 @@ export default function PortalPage() {
             </label>
             <input
               type="password"
-              className="w-full border border-gray-400 rounded-md px-4 py-3 mt-2 text-gray-900 placeholder-gray-500"
+              className="w-full border border-gray-400 rounded-md px-4 py-3 mt-2 text-gray-900"
               placeholder="Enter your secure password..."
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <p className="text-red-600 text-sm">
-              *Password must be at least 8 characters
-            </p>
           </div>
 
           <div className="text-right">
@@ -135,6 +143,7 @@ export default function PortalPage() {
           </button>
         </form>
 
+        {/* REGISTER LINK */}
         <div className="mt-8 text-center">
           <span className="text-sm text-gray-800">Don’t have an account?</span>{" "}
           <Link

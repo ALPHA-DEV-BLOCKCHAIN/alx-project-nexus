@@ -16,13 +16,14 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [pastPurchases, setPastPurchases] = useState<CartItem[]>([]);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const storedChecked = JSON.parse(localStorage.getItem("checkedItems") || "[]");
-    setCheckedItems(storedChecked.length ? storedChecked : cart.map(item => item.id));
-
     const user = localStorage.getItem("userLoggedIn");
     setIsLoggedIn(!!user);
+
+    const storedChecked = JSON.parse(localStorage.getItem("checkedItems") || "[]");
+    setCheckedItems(storedChecked.length ? storedChecked : cart.map(item => item.id));
 
     const past = localStorage.getItem("pastPurchases");
     if (past) setPastPurchases(JSON.parse(past));
@@ -34,23 +35,28 @@ export default function CheckoutPage() {
 
   const handlePayment = () => {
     if (!isLoggedIn) {
-      router.push("/dashboard/login");
+      setMessage("You must login or register to pay.");
+      router.push("/portal"); // redirect to your portal login page
       return;
     }
 
     if (!name || !email || !address || !paymentMethod) {
-      alert("Please fill all fields and select a payment method.");
+      setMessage("Please fill in all your details and select a payment method.");
       return;
     }
 
+    // Save purchases
     const newPurchases = [...pastPurchases, ...itemsToCheckout];
     localStorage.setItem("pastPurchases", JSON.stringify(newPurchases));
     setPastPurchases(newPurchases);
 
+    // Clear cart
     clearCart();
     setCheckedItems([]);
-    alert(`Payment successful! Total: $${totalPrice.toFixed(2)} via ${paymentMethod}`);
-    router.push("/");
+    setMessage(""); // clear message
+
+    // Redirect to dashboard after payment
+    router.push("/dashboard");
   };
 
   const handleBackToCart = () => {
@@ -63,74 +69,67 @@ export default function CheckoutPage() {
     );
   };
 
-  if (cart.length === 0) {
-    return (
-      <section className="p-10">
-        <h1 className="text-4xl font-bold mb-6">Checkout</h1>
-        <p className="text-gray-600">Your cart is empty.</p>
-        <button
-          onClick={handleBackToCart}
-          className="mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-[20px]"
-        >
-          Back to Cart
-        </button>
-      </section>
-    );
-  }
-
   return (
     <section className="p-10 max-w-5xl mx-auto">
-      <h1 className="text-4xl font-bold mb-6">Checkout</h1>
+      <h1 className="text-4xl font-bold mb-6 text-gray-800">Checkout</h1>
+
+      {message && (
+        <div className="mb-4 text-red-600 font-medium">{message}</div>
+      )}
 
       {/* Items Section */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Your Items</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {itemsToCheckout.map((item, index) => (
-            <div
-              key={`${item.id}-${index}`}
-              className="bg-white rounded-[30px] shadow-lg overflow-hidden flex flex-col"
-            >
-              <Image
-                src={item.image}
-                width={400}
-                height={400}
-                alt={item.name}
-                className="h-48 w-full object-cover"
-              />
-              <div className="p-4 flex flex-col flex-1 justify-between">
-                <h3 className="text-xl font-semibold text-gray-800">{item.name}</h3>
-                <p className="text-gray-700 mt-2">${item.price.toFixed(2)}</p>
-                <label className="mt-2 flex items-center gap-2 text-gray-800">
-                  <input
-                    type="checkbox"
-                    checked={checkedItems.includes(item.id)}
-                    onChange={() => toggleItem(item.id)}
-                    className="w-5 h-5 accent-blue-600"
-                  />
-                  Include in Payment
-                </label>
-                <button
-                  onClick={() => removeFromCart(item.id)}
-                  className="mt-2 bg-red-600 hover:bg-red-700 text-white py-2 rounded-[20px]"
-                >
-                  Remove
-                </button>
+      {itemsToCheckout.length === 0 ? (
+        <p className="text-gray-600 mb-4">No items selected for checkout.</p>
+      ) : (
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-800">Your Items</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {itemsToCheckout.map((item, index) => (
+              <div
+                key={`${item.id}-${index}`}
+                className="bg-white rounded-[30px] shadow-lg overflow-hidden flex flex-col"
+              >
+                <Image
+                  src={item.image}
+                  width={400}
+                  height={400}
+                  alt={item.name}
+                  className="h-48 w-full object-cover"
+                />
+                <div className="p-4 flex flex-col flex-1 justify-between">
+                  <h3 className="text-xl font-semibold text-gray-800">{item.name}</h3>
+                  <p className="text-gray-700 mt-2">${item.price.toFixed(2)}</p>
+                  <label className="mt-2 flex items-center gap-2 text-gray-800">
+                    <input
+                      type="checkbox"
+                      checked={checkedItems.includes(item.id)}
+                      onChange={() => toggleItem(item.id)}
+                      className="w-5 h-5 accent-blue-600"
+                    />
+                    Include in Payment
+                  </label>
+                  <button
+                    onClick={() => removeFromCart(item.id)}
+                    className="mt-2 bg-red-600 hover:bg-red-700 text-white py-2 rounded-[20px]"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        <div className="flex justify-between items-center font-bold text-xl mt-6">
-          <span>Total: ${totalPrice.toFixed(2)}</span>
-          <button
-            onClick={handleBackToCart}
-            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-[20px]"
-          >
-            Back to Cart
-          </button>
+          <div className="flex justify-between items-center font-bold text-xl mt-6">
+            <span>Total: ${totalPrice.toFixed(2)}</span>
+            <button
+              onClick={handleBackToCart}
+              className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-[20px]"
+            >
+              Back to Cart
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* User Info */}
       <div className="bg-white p-6 rounded-[30px] shadow mb-6 border border-gray-200">
@@ -163,7 +162,7 @@ export default function CheckoutPage() {
       {/* Payment Methods */}
       <div className="bg-white p-6 rounded-[30px] shadow mb-6 border border-gray-200">
         <h2 className="text-2xl font-semibold mb-4 text-gray-800">Payment Method</h2>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 relative z-10">
           {["Credit Card", "PayPal", "Bank Transfer", "Airtel Money", "M-Pesa"].map(
             (method) => (
               <label
