@@ -192,7 +192,7 @@ export default function CheckoutPage() {
       </button>
 
       {/* Past Purchases */}
-      {pastPurchases.length > 0 && (
+      {/* {pastPurchases.length > 0 && (
         <div className="mt-10">
           <h2 className="text-2xl font-semibold mb-4 text-gray-800">Past Purchases</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -214,7 +214,7 @@ export default function CheckoutPage() {
             ))}
           </div>
         </div>
-      )}
+      )} */}
     </section>
   );
 }

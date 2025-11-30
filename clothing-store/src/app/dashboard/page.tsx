@@ -113,7 +113,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Past Purchases */}
+        {/* Past Purchases
         <div className="mt-16">
           <h2 className="text-2xl font-bold text-gray-800">Past Purchases</h2>
           <p className="text-gray-600 mt-1">
@@ -144,7 +144,7 @@ export default function Dashboard() {
               ))}
             </div>
           )}
-        </div>
+        </div> */}
       </div>
     </section>
   );
