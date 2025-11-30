@@ -42,13 +42,19 @@ const allProducts = {
   ],
 };
 
+// ✅ Tell TypeScript all allowed keys
+type CategoryType = keyof typeof allProducts;
+
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const category = searchParams.get("category");
 
   const { addToCart } = useCart();
 
-  const products = category ? allProducts[category] : null;
+  // ✅ Fix: cast category into specific allowed types
+  const products = category
+    ? allProducts[category as CategoryType]
+    : null;
 
   return (
     <section className="p-10">
