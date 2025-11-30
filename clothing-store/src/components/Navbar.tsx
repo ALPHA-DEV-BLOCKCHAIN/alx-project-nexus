@@ -23,10 +23,10 @@ export default function Navbar() {
           <li><Link href="/services">Services</Link></li>
           <li><Link href="/projects">Projects</Link></li>
           <li><Link href="/blog">Blog</Link></li>
-          <li><Link href="/contact">Contact</Link></li>
+          {/* <li><Link href="/contact">Contact</Link></li> */}
           <li><Link href="/cart">Cart</Link></li>
 
-        
+          {/* ⭐ Added PORTAL */}
           <li>
             <Link
               href="/portal"
@@ -44,7 +44,7 @@ export default function Navbar() {
           Contact Us
         </Link>
 
-     
+        {/* Mobile Menu Button */}
         <button className="md:hidden" onClick={() => setOpen(!open)}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -62,7 +62,7 @@ export default function Navbar() {
         </button>
       </div>
 
-  
+      {/* Mobile Dropdown */}
       {open && (
         <div className="md:hidden bg-white shadow">
           <ul className="flex flex-col gap-4 px-6 py-4 text-gray-700 font-medium">
@@ -75,7 +75,7 @@ export default function Navbar() {
             {/* <li><Link href="/contact" onClick={() => setOpen(false)}>Contact</Link></li> */}
             <li><Link href="/cart" onClick={() => setOpen(false)}>Cart</Link></li>
 
-         
+            {/* ⭐ Added PORTAL in mobile */}
             <li>
               <Link
                 href="/portal"
