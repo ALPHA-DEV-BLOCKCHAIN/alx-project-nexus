@@ -1,10 +1,11 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 
-const allProducts = {
+const allProducts: Record<string, { id: number; name: string; price: number; image: string }[]> = {
   men: [
     { id: 1, name: "Men Jacket", price: 79, image: "/men/blackjacket.jpg" },
     { id: 2, name: "Men Shoes", price: 59, image: "/men/leather.jpg" },
@@ -42,19 +43,12 @@ const allProducts = {
   ],
 };
 
-// ✅ Tell TypeScript all allowed keys
-type CategoryType = keyof typeof allProducts;
-
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams();
   const category = searchParams.get("category");
-
   const { addToCart } = useCart();
 
-  // ✅ Fix: cast category into specific allowed types
-  const products = category
-    ? allProducts[category as CategoryType]
-    : null;
+  const products = category ? allProducts[category] : null;
 
   return (
     <section className="p-10">
@@ -82,7 +76,9 @@ export default function ProductsPage() {
               {item.name}
             </h3>
 
-            <p className="text-gray-700 font-medium">${item.price.toFixed(2)}</p>
+            <p className="text-gray-700 font-medium">
+              ${item.price.toFixed(2)}
+            </p>
 
             <button
               onClick={() => addToCart(item)}
@@ -94,5 +90,13 @@ export default function ProductsPage() {
         ))}
       </div>
     </section>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<p className="p-10">Loading products...</p>}>
+      <ProductsContent />
+    </Suspense>
   );
 }
