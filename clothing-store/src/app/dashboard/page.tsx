@@ -130,15 +130,15 @@ export default function Dashboard() {
                   className="p-5 bg-white shadow-md border rounded-xl flex justify-between items-center"
                 >
                   <div>
-                    <p className="font-semibold text-gray-800">{item.name}</p>
-                    <p className="text-gray-600 text-sm">Ksh {item.price}</p>
+                    <p className="font-semibold text-gray-800">{item?.name}</p>
+                    <p className="text-gray-600 text-sm">Ksh {item?.price}</p>
                     <p className="text-gray-500 text-xs mt-1">
-                      {new Date(item.date).toLocaleString()}
+                      {new Date(item?.date).toLocaleString()}
                     </p>
                   </div>
 
                   <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
-                    {item.paymentMethod}
+                    {item?.paymentMethod}
                   </span>
                 </div>
               ))}
