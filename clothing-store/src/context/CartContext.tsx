@@ -2,10 +2,10 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 
-type CartItem = {
+export type CartItem = {
   id: number;
   name: string;
-  price: string;
+  price: number; // changed to number
   image: string;
 };
 

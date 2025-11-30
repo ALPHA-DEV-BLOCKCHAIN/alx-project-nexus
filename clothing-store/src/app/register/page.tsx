@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -10,105 +11,141 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    // simple validation
+    if (!name.trim() || !email.trim() || password.length < 8) {
+      setError("Please complete all fields. Password must be at least 8 characters.");
+      return;
+    }
+
+    setSubmitting(true);
 
     const users = JSON.parse(localStorage.getItem("users") || "[]");
 
     // Check if email already exists
     if (users.some((u: any) => u.email === email)) {
-      alert("Email already registered!");
+      setError("Email already registered!");
+      setSubmitting(false);
       return;
     }
 
-    users.push({ name, email, password });
+    // Save user
+    users.push({ name: name.trim(), email: email.trim(), password });
     localStorage.setItem("users", JSON.stringify(users));
 
-    alert("Registration successful! Login now.");
-    router.push("/login");
+    // Show non-blocking success message then redirect to portal
+    setSuccess("Registration successful — redirecting to Portal...");
+    setTimeout(() => {
+      router.push("/portal");
+    }, 900);
+
+    setSubmitting(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-8">
-        
-        {/* Header */}
-        <h1 className="text-3xl font-semibold text-gray-900 mb-6 text-center">
-          Create Your Account
-        </h1>
-        <p className="text-gray-600 text-center mb-8">
-          Join Fashly and start shopping in style
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8">
+        <h1 className="text-3xl font-semibold text-gray-900 mb-2">Create Account</h1>
+        <p className="text-sm text-gray-600 mb-6">
+          Join Fashly — create an account to track orders and access your dashboard.
         </p>
 
-        {/* Form */}
-        <form onSubmit={handleRegister} className="space-y-5">
+        {/* Success / Error */}
+        {error && (
+          <div className="mb-4 text-sm text-red-700 bg-red-50 border border-red-100 p-3 rounded">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="mb-4 text-sm text-green-800 bg-green-50 border border-green-100 p-3 rounded">
+            {success}
+          </div>
+        )}
+
+        <form onSubmit={handleRegister} className="space-y-4">
           {/* Name */}
           <div>
-            <label className="text-gray-700 font-medium block mb-1">
-              Full Name
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-gray-700 font-medium">Full Name</label>
+              <span className="text-red-600 font-semibold">*</span>
+            </div>
             <input
               type="text"
-              placeholder="Enter your full name"
-              className="w-full p-3 border rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black outline-none"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              placeholder="John Doe"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#e86f53] outline-none"
               required
             />
           </div>
 
           {/* Email */}
           <div>
-            <label className="text-gray-700 font-medium block mb-1">
-              Email Address
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-gray-700 font-medium">Email</label>
+              <span className="text-red-600 font-semibold">*</span>
+            </div>
             <input
               type="email"
-              placeholder="Enter your email"
-              className="w-full p-3 border rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black outline-none"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#e86f53] outline-none"
               required
             />
           </div>
 
           {/* Password */}
           <div>
-            <label className="text-gray-700 font-medium block mb-1">
-              Password
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-gray-700 font-medium">Password</label>
+              <span className="text-red-600 font-semibold">*</span>
+            </div>
             <input
               type="password"
-              placeholder="Create a password"
-              className="w-full p-3 border rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-black outline-none"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Create a secure password"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#e86f53] outline-none"
               required
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Must be at least 8 characters.
-            </p>
+            <p className="mt-2 text-sm text-red-600">* Password must be at least 8 characters</p>
           </div>
 
-          {/* Button */}
           <button
-            className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-900 transition"
+            type="submit"
+            disabled={submitting}
+            className="w-full mt-2 bg-[#e86f53] hover:bg-[#cf6046] text-white py-3 rounded-lg font-semibold transition disabled:opacity-60"
           >
-            Register
+            {submitting ? "Creating..." : "Register"}
           </button>
         </form>
 
-        {/* Already have account */}
-        <div className="text-center mt-6">
-          <p className="text-gray-700 text-sm">
-            Already have an account?
-            <span
-              onClick={() => router.push("/login")}
-              className="ml-1 text-black underline font-medium cursor-pointer"
-            >
-              Login
-            </span>
+        {/* Bottom links */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-700">
+            Already have an account?{" "}
+            <Link href="/portal" className="font-semibold text-[#e86f53] underline">
+              Sign in
+            </Link>
           </p>
+
+          {/* You asked to keep the "Don't have an account? Create Account" statement.
+              On register page it doesn't make sense, but to preserve the text as requested,
+              show it below but inactive */}
+          <div className="mt-3">
+            {/* <span className="text-sm text-gray-600">Don't have an account? </span>
+            <Link href="/register" className="text-sm underline font-medium text-gray-800">
+              Create Account
+            </Link> */}
+          </div>
         </div>
       </div>
     </div>

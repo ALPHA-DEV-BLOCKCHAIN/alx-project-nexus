@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useCart } from "@/context/CartContext";
-import { useState } from "react";
+import { useCart, CartItem } from "@/context/CartContext";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Cart() {
@@ -10,7 +10,12 @@ export default function Cart() {
   const router = useRouter();
 
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
-  const [wishfulItems, setWishfulItems] = useState<any[]>([]);
+  const [wishfulItems, setWishfulItems] = useState<CartItem[]>([]);
+
+  // automatically select all items initially
+  useEffect(() => {
+    setCheckedItems(cart.map((item) => item.id));
+  }, [cart]);
 
   const handleToggle = (id: number) => {
     setCheckedItems((prev) =>
@@ -18,32 +23,34 @@ export default function Cart() {
     );
   };
 
-  const handleAddToWishful = (item: any) => {
-    if (!wishfulItems.find((i) => i.id === item.id)) {
-      setWishfulItems((prev) => [...prev, item]);
-      removeFromCart(item.id);
-      alert(`${item.name} moved to Wishful Buying!`);
-    }
+  const handleAddToWishful = (item: CartItem) => {
+    setWishfulItems((prev) => [...prev, item]);
+    removeFromCart(item.id);
   };
 
-  const handleBackToCart = (item: any) => {
+  const handleBackToCart = (item: CartItem) => {
     addToCart(item);
     setWishfulItems((prev) => prev.filter((i) => i.id !== item.id));
-    alert(`${item.name} added back to Cart!`);
   };
 
-  const handleRemoveWishful = (item: any) => {
+  const handleRemoveWishful = (item: CartItem) => {
     setWishfulItems((prev) => prev.filter((i) => i.id !== item.id));
-    alert(`${item.name} removed from Wishful Buying!`);
   };
 
   const handleCheckout = () => {
-    if (checkedItems.length === 0) {
-      alert("Please select items to checkout.");
-      return;
-    }
-    router.push("/checkout"); // Later, pass only checkedItems to checkout
+    if (cart.length === 0) return;
+
+    // default: if no items checked, select all
+    const selectedItems = checkedItems.length ? checkedItems : cart.map(i => i.id);
+
+    // save selected items to localStorage for CheckoutPage
+    localStorage.setItem("checkedItems", JSON.stringify(selectedItems));
+    router.push("/checkout");
   };
+
+  const totalPrice = cart
+    .filter((item) => checkedItems.includes(item.id))
+    .reduce((acc, item) => acc + item.price, 0);
 
   return (
     <section className="p-10">
@@ -54,9 +61,9 @@ export default function Cart() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {cart.map((item) => (
+        {cart.map((item, index) => (
           <div
-            key={item.id}
+            key={`${item.id}-${index}`}
             className="rounded-[30px] shadow-lg bg-white p-4 flex flex-col"
           >
             <Image
@@ -68,7 +75,7 @@ export default function Cart() {
             />
 
             <h3 className="mt-3 text-xl font-semibold">{item.name}</h3>
-            <p className="text-gray-600">{item.price}</p>
+            <p className="text-gray-600">${item.price.toFixed(2)}</p>
 
             <div className="mt-2 flex items-center justify-between">
               <label className="flex items-center gap-2">
@@ -100,7 +107,10 @@ export default function Cart() {
       </div>
 
       {cart.length > 0 && (
-        <div className="mt-6 flex justify-end">
+        <div className="mt-6 flex justify-end items-center gap-4">
+          <span className="text-xl font-semibold">
+            Total: ${totalPrice.toFixed(2)}
+          </span>
           <button
             onClick={handleCheckout}
             className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-[30px] text-lg transition-all"
@@ -116,9 +126,9 @@ export default function Cart() {
           <hr className="my-6 border-gray-300" />
           <h2 className="text-3xl font-bold mb-4">Wishful Buying</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {wishfulItems.map((item) => (
+            {wishfulItems.map((item, index) => (
               <div
-                key={item.id}
+                key={`${item.id}-${index}-wishful`}
                 className="rounded-[30px] shadow-lg bg-white p-4 flex flex-col"
               >
                 <Image
@@ -129,7 +139,7 @@ export default function Cart() {
                   className="rounded-[30px] object-cover h-48 w-full"
                 />
                 <h3 className="mt-3 text-xl font-semibold">{item.name}</h3>
-                <p className="text-gray-600">{item.price}</p>
+                <p className="text-gray-600">${item.price.toFixed(2)}</p>
 
                 <div className="mt-4 flex gap-2">
                   <button

@@ -9,6 +9,8 @@ interface User {
 
 interface UserContextType {
   user: User | null;
+  success: string;                 // ⭐ added
+  setSuccess: (msg: string) => void; // ⭐ added
   login: (user: User) => void;
   logout: () => void;
 }
@@ -21,11 +23,12 @@ interface UserProviderProps {
 
 export function UserProvider({ children }: UserProviderProps) {
   const [user, setUser] = useState<User | null>(null);
+  const [success, setSuccess] = useState<string>(""); // ⭐ added
 
   // Load user from localStorage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedUser = localStorage.getItem("user");
+      const savedUser = localStorage.getItem("currentUser");
       if (savedUser) {
         setUser(JSON.parse(savedUser));
       }
@@ -35,23 +38,24 @@ export function UserProvider({ children }: UserProviderProps) {
   // Login function
   const login = (userData: User) => {
     setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("currentUser", JSON.stringify(userData));
+    setSuccess("Login successful");   // ⭐ non-blocking success message
   };
 
-  // Logout function
+  // Logout
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
+    localStorage.removeItem("currentUser");
+    setSuccess(""); // clear message
   };
 
   return (
-    <UserContext.Provider value={{ user, login, logout }}>
+    <UserContext.Provider value={{ user, success, setSuccess, login, logout }}>
       {children}
     </UserContext.Provider>
   );
 }
 
-// Custom hook to use the UserContext
 export function useUser(): UserContextType {
   const context = useContext(UserContext);
   if (!context) {
