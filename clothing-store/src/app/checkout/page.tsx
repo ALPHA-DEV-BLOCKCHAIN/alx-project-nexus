@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 export default function CheckoutPage() {
-  const { cart, removeFromCart, clearCart } = useCart();
+  const { cart, addToCart, removeFromCart, clearCart } = useCart();
   const router = useRouter();
 
   const [checkedItems, setCheckedItems] = useState<number[]>([]);
@@ -15,28 +15,24 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [pastPurchases, setPastPurchases] = useState<CartItem[]>([]);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     const user = localStorage.getItem("userLoggedIn");
     setIsLoggedIn(!!user);
 
+    // Initialize checked items with all items in cart
     const storedChecked = JSON.parse(localStorage.getItem("checkedItems") || "[]");
     setCheckedItems(storedChecked.length ? storedChecked : cart.map(item => item.id));
-
-    const past = localStorage.getItem("pastPurchases");
-    if (past) setPastPurchases(JSON.parse(past));
   }, [cart]);
 
   const itemsToCheckout = cart.filter(item => checkedItems.includes(item.id));
-
   const totalPrice = itemsToCheckout.reduce((sum, item) => sum + item.price, 0);
 
   const handlePayment = () => {
     if (!isLoggedIn) {
-      setMessage("You must login or register to pay.");
-      router.push("/portal"); // redirect to your portal login page
+      setMessage("You must register or login to make a payment.");
+      router.push("/portal"); // redirect to login/register portal
       return;
     }
 
@@ -45,17 +41,24 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Save purchases
-    const newPurchases = [...pastPurchases, ...itemsToCheckout];
+    // Save purchases in localStorage
+    const pastPurchases = JSON.parse(localStorage.getItem("pastPurchases") || "[]");
+    const newPurchases = [
+      ...pastPurchases,
+      ...itemsToCheckout.map(item => ({
+        ...item,
+        date: new Date().toISOString(),
+        paymentMethod,
+      })),
+    ];
     localStorage.setItem("pastPurchases", JSON.stringify(newPurchases));
-    setPastPurchases(newPurchases);
 
     // Clear cart
     clearCart();
     setCheckedItems([]);
-    setMessage(""); // clear message
+    setMessage("");
 
-    // Redirect to dashboard after payment
+    // Redirect to dashboard
     router.push("/dashboard");
   };
 
@@ -190,31 +193,6 @@ export default function CheckoutPage() {
       >
         Pay Now
       </button>
-
-      {/* Past Purchases */}
-      {/* {pastPurchases.length > 0 && (
-        <div className="mt-10">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-800">Past Purchases</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {pastPurchases.map((item, index) => (
-              <div
-                key={`${item.id}-past-${index}`}
-                className="bg-white rounded-[30px] shadow-lg overflow-hidden flex flex-col p-4"
-              >
-                <Image
-                  src={item.image}
-                  width={400}
-                  height={400}
-                  alt={item.name}
-                  className="h-48 w-full object-cover"
-                />
-                <h3 className="mt-3 text-xl font-semibold text-gray-800">{item.name}</h3>
-                <p className="text-gray-600 mt-1">${item.price.toFixed(2)}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )} */}
     </section>
   );
 }
